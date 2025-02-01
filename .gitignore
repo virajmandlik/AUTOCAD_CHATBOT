@@ -24,3 +24,4 @@ Thumbs.db
 
 # Jupyter Notebooks
 .ipynb_checkpoints/
+.vercel
