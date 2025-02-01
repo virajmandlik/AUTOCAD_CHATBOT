@@ -1,0 +1,26 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Virtual environments
+venv/
+.env/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Vercel
+.vercel/
+.vercelignore
+
+# IDEs and Editors
+.vscode/
+.idea/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/

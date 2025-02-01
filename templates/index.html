@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Dimension Chatbot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            color: #333;
+        }
+        /* Background Image for the Page */
+        body {
+            background-image: url('https://t4.ftcdn.net/jpg/04/48/69/39/240_F_448693948_cqgCa8FlDIoRkoZ3OdCFkL5X8wDZjxrS.jpg');
+            background-size: cover; /* Resize image to cover full screen */
+            background-position: center; /* Center the image */
+            background-attachment: fixed; /* Keep image fixed when scrolling */
+        }
+
+        #main-content {
+            text-align: center;
+            margin: 100px auto;
+            max-width: 900px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8); /* Slightly transparent background */
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        #main-content h1 {
+            font-size: 36px;
+            color: #333;
+        }
+        #main-content p {
+            font-size: 18px;
+            line-height: 1.5;
+            color: #555;
+            margin-top: 20px;
+        }
+        #chatbot-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 36px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 50%;
+            padding: 15px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #chatbot-icon:hover {
+            background-color: #218838;
+        }
+        #chatbot-container {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 350px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 9999;
+            padding: 20px;
+        }
+        #chatbot-container header {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        #chatbox {
+            height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+            padding: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        #user-input {
+            width: calc(100% - 90px);
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 14px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        footer {
+            text-align: center;
+            margin-top: 15px;
+        }
+        footer button {
+            background-color: #dc3545;
+        }
+        footer button:hover {
+            background-color: #c82333;
+        }
+
+        @media (max-width: 480px) {
+        #chatbot-container {
+            width: 90%;
+            right: 5%;
+        }
+        #user-input {
+            width: calc(100% - 80px);
+        }
+    }
+    
+    .loading {
+        display: none;
+        color: #666;
+        font-style: italic;
+    }
+    </style>
+</head>
+<body>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <h1>Welcome to the Room Dimension Chatbot</h1>
+        <p>This chatbot helps you generate floor plans by entering the dimensions of your rooms. You will get a downloadable AutoCAD file with the layout.</p>
+        <p>Type the room dimensions in the format "width height" (e.g., "15 20"). Type "done" to finish the process.</p>
+    </div>
+
+    <!-- Chatbot Icon -->
+    <div id="chatbot-icon" onclick="toggleChatbot()">💬</div>
+
+    <!-- Chatbot Interface -->
+    <div id="chatbot-container">
+        <header>
+            <h3>Room Dimension Chatbot</h3>
+        </header>
+        <div id="chatbox"></div>
+        <input type="text" id="user-input" placeholder="Enter dimensions...">
+        <button onclick="sendMessage()">Send</button>
+        <footer>
+            <button onclick="closeChatbot()">Close</button>
+        </footer>
+    </div>
+
+    <script>
+        let rooms = [];
+
+        // Toggle chatbot interface
+        function toggleChatbot() {
+            document.getElementById("chatbot-container").style.display = "block";
+            greetUser();  // Greet the user when chatbot opens
+        }
+
+        // Close chatbot interface
+        function closeChatbot() {
+            document.getElementById("chatbot-container").style.display = "none";
+        }
+
+        // Greet user when the chatbot opens
+        function greetUser() {
+            let chatbox = document.getElementById("chatbox");
+            chatbox.innerHTML += `<p><strong>Bot:</strong> Hello! I'm here to help you create floor plans. Please enter the dimensions of your rooms.</p>`;
+            chatbox.innerHTML += `<p><strong>Bot:</strong> For example, you can type "15 20" for a room with a width of 15 meters and height of 20 meters. Type "done" when you're finished.</p>`;
+        }
+
+        function sendMessage() {
+            let input = document.getElementById("user-input").value;
+            if (input.trim() === "") return;
+
+            let chatbox = document.getElementById("chatbox");
+            chatbox.innerHTML += `<p><strong>You:</strong> ${input}</p>`;
+
+            if (input.toLowerCase().includes("done")) {
+                fetch("/generate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ rooms: rooms })
+                })
+                .then(response => response.blob())
+                .then(blob => {
+                    let url = window.URL.createObjectURL(blob);
+                    let a = document.createElement("a");
+                    a.href = url;
+                    a.download = "floor_plan.dwg";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    chatbox.innerHTML += `<p><strong>Bot:</strong> Download ready! ✅</p>`;
+                });
+            } else {
+                let parts = input.split(" ");
+                if (parts.length === 2) {
+                    let width = parseFloat(parts[0]);
+                    let height = parseFloat(parts[1]);
+                    if (!isNaN(width) && !isNaN(height)) {
+                        rooms.push({ width: width, height: height });
+                        chatbox.innerHTML += `<p><strong>Bot:</strong> Added room with width ${width}m and height ${height}m. Type "done" to finish.</p>`;
+                    } else {
+                        chatbox.innerHTML += `<p><strong>Bot:</strong> Invalid input! Please enter like "15 20".</p>`;
+                    }
+                } else {
+                    chatbox.innerHTML += `<p><strong>Bot:</strong> Enter dimensions in format "width height" (e.g., "15 20").</p>`;
+                }
+            }
+
+            document.getElementById("user-input").value = "";
+        }
+
+
+
+
+        function toggleChatbot() {
+        const chatContainer = document.getElementById("chatbot-container");
+        chatContainer.style.display = "block";
+        document.getElementById("chatbox").innerHTML = "";
+        greetUser();
+    }
+
+    function greetUser() {
+        let chatbox = document.getElementById("chatbox");
+        chatbox.innerHTML += `<p><strong>Bot:</strong> Hello! Let's create your floor plan. Enter room dimensions as "width height" (e.g., "15 20"). Type "done" when finished.</p>`;
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    function sendMessage() {
+        let input = document.getElementById("user-input").value.trim();
+        if (!input) return;
+
+        let chatbox = document.getElementById("chatbox");
+        chatbox.innerHTML += `<p><strong>You:</strong> ${input}</p>`;
+
+        if (input.toLowerCase() === "done") {
+            if (rooms.length === 0) {
+                chatbox.innerHTML += `<p><strong>Bot:</strong> Please add at least one room before finishing.</p>`;
+                chatbox.scrollTop = chatbox.scrollHeight;
+                return;
+            }
+
+            // Show loading state
+            const loader = document.createElement('p');
+            loader.innerHTML = `<strong>Bot:</strong> Generating floor plan... <span class="loading">⏳</span>`;
+            chatbox.appendChild(loader);
+            chatbox.scrollTop = chatbox.scrollHeight;
+
+            fetch("/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ rooms: rooms })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Server error');
+                return response.blob();
+            })
+            .then(blob => {
+                rooms = [];
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = "floor_plan.dwg";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                loader.innerHTML = `<strong>Bot:</strong> Download ready! ✅`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loader.innerHTML = `<strong>Bot:</strong> Error generating file. Please try again. ❌`;
+            })
+            .finally(() => {
+                chatbox.scrollTop = chatbox.scrollHeight;
+            });
+
+        } else {
+            const parts = input.split(" ");
+            if (parts.length === 2) {
+                const width = parseFloat(parts[0]);
+                const height = parseFloat(parts[1]);
+                
+                if (!isNaN(width) && !isNaN(height) && width > 0 && height > 0) {
+                    rooms.push({ width, height });
+                    chatbox.innerHTML += `<p><strong>Bot:</strong> Added room ${rooms.length}: ${width}m × ${height}m</p>`;
+                } else {
+                    chatbox.innerHTML += `<p><strong>Bot:</strong> Please enter positive numbers (e.g., "15 20")</p>`;
+                }
+            } else {
+                chatbox.innerHTML += `<p><strong>Bot:</strong> Please enter dimensions as "width height"</p>`;
+            }
+        }
+
+        document.getElementById("user-input").value = "";
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    </script>
+
+</body>
+</html>
